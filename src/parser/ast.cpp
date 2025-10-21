@@ -9,6 +9,24 @@ void IntLiteralExpr::accept(ASTVisitor* visitor) {
     visitor->visit(this);
 }
 
+// CharLiteralExpr
+CharLiteralExpr::CharLiteralExpr(int value) : value(value) {
+    type = ASTNodeType::CHAR_LITERAL_EXPR;
+}
+
+void CharLiteralExpr::accept(ASTVisitor* visitor) {
+    visitor->visit(this);
+}
+
+// StringLiteralExpr
+StringLiteralExpr::StringLiteralExpr(const std::string& value) : value(value) {
+    type = ASTNodeType::STRING_LITERAL_EXPR;
+}
+
+void StringLiteralExpr::accept(ASTVisitor* visitor) {
+    visitor->visit(this);
+}
+
 // IdentExpr
 IdentExpr::IdentExpr(const std::string& name) : name(name) {
     type = ASTNodeType::IDENT_EXPR;
@@ -117,10 +135,11 @@ void ContinueStmt::accept(ASTVisitor* visitor) {
 }
 
 // VarDecl
-VarDecl::VarDecl(const std::string& name, bool is_const, bool is_array,
-                 int array_size, std::unique_ptr<Expression> init_value)
-    : name(name), is_const(is_const), is_array(is_array), 
-      array_size(array_size), init_value(std::move(init_value)) {
+VarDecl::VarDecl(const std::string& name, const std::string& var_type, bool is_const, 
+                 bool is_array, int array_size, int pointer_level,
+                 std::unique_ptr<Expression> init_value)
+    : name(name), var_type(var_type), is_const(is_const), is_array(is_array), 
+      array_size(array_size), pointer_level(pointer_level), init_value(std::move(init_value)) {
     type = ASTNodeType::VAR_DECL;
 }
 

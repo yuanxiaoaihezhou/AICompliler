@@ -22,6 +22,8 @@ private:
     void skipComment();
     Token number();
     Token identifier();
+    Token charLiteral();
+    Token stringLiteral();
     
 public:
     Lexer(const std::string& source);

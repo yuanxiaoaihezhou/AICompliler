@@ -243,6 +243,20 @@ void IRGenerator::visit(IntLiteralExpr* node) {
     last_result = temp;
 }
 
+void IRGenerator::visit(CharLiteralExpr* node) {
+    std::string temp = current_function->newTemp();
+    current_function->addInstruction(IRInstruction(IROpcode::CONST, temp, std::to_string(node->value)));
+    last_result = temp;
+}
+
+void IRGenerator::visit(StringLiteralExpr* node) {
+    // For now, treat strings as pointers to const data
+    // In a real implementation, this would create a string constant in .rodata
+    std::string temp = current_function->newTemp();
+    current_function->addInstruction(IRInstruction(IROpcode::CONST, temp, "\"" + node->value + "\""));
+    last_result = temp;
+}
+
 void IRGenerator::visit(ArrayAccess* node) {
     node->index->accept(this);
     std::string index_result = last_result;

@@ -1,0 +1,73 @@
+// Simple symbol table demonstrating pointer-based data structures
+// Shows how enhanced features enable compiler data structure implementation
+
+// Symbol table constants
+const int MAX_SYMBOLS = 100;
+const int SYMBOL_VAR = 1;
+const int SYMBOL_FUNC = 2;
+
+// Global symbol table arrays (simulating a struct-like layout)
+int symbol_types[100];      // Array of symbol types
+int symbol_values[100];     // Array of symbol values
+int symbol_count;           // Number of symbols
+
+// Initialize symbol table
+int init_symbols() {
+    symbol_count = 0;
+    return 0;
+}
+
+// Add a symbol to the table
+int add_symbol(int sym_type, int value) {
+    int index;
+    index = symbol_count;
+    
+    if (index < MAX_SYMBOLS) {
+        symbol_types[index] = sym_type;
+        symbol_values[index] = value;
+        ++symbol_count;
+        return index;
+    }
+    
+    return -1;  // Table full
+}
+
+// Get symbol type by index
+int get_symbol_type(int index) {
+    if (index < symbol_count) {
+        return symbol_types[index];
+    }
+    return -1;
+}
+
+// Get symbol value by index
+int get_symbol_value(int index) {
+    if (index < symbol_count) {
+        return symbol_values[index];
+    }
+    return -1;
+}
+
+// Main function demonstrating symbol table
+int main() {
+    int idx1;
+    int idx2;
+    int type;
+    int value;
+    
+    // Initialize
+    init_symbols();
+    
+    // Add some symbols
+    idx1 = add_symbol(SYMBOL_VAR, 42);
+    idx2 = add_symbol(SYMBOL_FUNC, 100);
+    
+    // Retrieve symbol information
+    type = get_symbol_type(idx1);    // type = 1 (SYMBOL_VAR)
+    value = get_symbol_value(idx1);  // value = 42
+    
+    type = get_symbol_type(idx2);    // type = 2 (SYMBOL_FUNC)
+    value = get_symbol_value(idx2);  // value = 100
+    
+    return symbol_count;  // Should return 2
+}

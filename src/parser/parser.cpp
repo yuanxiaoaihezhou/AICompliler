@@ -58,9 +58,16 @@ std::unique_ptr<Program> Parser::parseProgram() {
     while (currentToken().type != TokenType::END_OF_FILE) {
         if (currentToken().type == TokenType::CONST) {
             program->declarations.push_back(parseConstDecl());
-        } else if (currentToken().type == TokenType::INT || currentToken().type == TokenType::VOID) {
+        } else if (currentToken().type == TokenType::INT || 
+                   currentToken().type == TokenType::VOID ||
+                   currentToken().type == TokenType::CHAR) {
             // Look ahead to distinguish between function and variable
-            if (peek().type == TokenType::IDENT && peek(2).type == TokenType::LPAREN) {
+            // Need to skip potential pointer stars
+            int lookahead = 1;
+            while (peek(lookahead).type == TokenType::MULT) {
+                lookahead++;
+            }
+            if (peek(lookahead).type == TokenType::IDENT && peek(lookahead + 1).type == TokenType::LPAREN) {
                 program->declarations.push_back(parseFunctionDef());
             } else {
                 program->declarations.push_back(parseVarDecl());
@@ -79,8 +86,15 @@ std::unique_ptr<FunctionDef> Parser::parseFunctionDef() {
         return_type = "int";
     } else if (match(TokenType::VOID)) {
         return_type = "void";
+    } else if (match(TokenType::CHAR)) {
+        return_type = "char";
     } else {
         throw ParseError("Expected return type");
+    }
+    
+    // Handle pointer return types
+    while (match(TokenType::MULT)) {
+        return_type += "*";
     }
     
     std::string name = currentToken().lexeme;
@@ -95,8 +109,17 @@ std::unique_ptr<FunctionDef> Parser::parseFunctionDef() {
             std::string param_type;
             if (match(TokenType::INT)) {
                 param_type = "int";
+            } else if (match(TokenType::CHAR)) {
+                param_type = "char";
+            } else if (match(TokenType::VOID)) {
+                param_type = "void";
             } else {
                 throw ParseError("Expected parameter type");
+            }
+            
+            // Handle pointer parameters
+            while (match(TokenType::MULT)) {
+                param_type += "*";
             }
             
             std::string param_name = currentToken().lexeme;
@@ -113,7 +136,21 @@ std::unique_ptr<FunctionDef> Parser::parseFunctionDef() {
 }
 
 std::unique_ptr<VarDecl> Parser::parseVarDecl() {
-    expect(TokenType::INT, "Expected 'int'");
+    std::string var_type;
+    if (match(TokenType::INT)) {
+        var_type = "int";
+    } else if (match(TokenType::CHAR)) {
+        var_type = "char";
+    } else {
+        throw ParseError("Expected type (int or char)");
+    }
+    
+    // Handle pointer types
+    int pointer_level = 0;
+    while (match(TokenType::MULT)) {
+        var_type += "*";
+        pointer_level++;
+    }
     
     std::string name = currentToken().lexeme;
     expect(TokenType::IDENT, "Expected variable name");
@@ -137,12 +174,27 @@ std::unique_ptr<VarDecl> Parser::parseVarDecl() {
     
     expect(TokenType::SEMICOLON, "Expected ';'");
     
-    return std::make_unique<VarDecl>(name, false, is_array, array_size, std::move(init_value));
+    return std::make_unique<VarDecl>(name, var_type, false, is_array, array_size, pointer_level, std::move(init_value));
 }
 
 std::unique_ptr<VarDecl> Parser::parseConstDecl() {
     expect(TokenType::CONST, "Expected 'const'");
-    expect(TokenType::INT, "Expected 'int'");
+    
+    std::string var_type;
+    if (match(TokenType::INT)) {
+        var_type = "int";
+    } else if (match(TokenType::CHAR)) {
+        var_type = "char";
+    } else {
+        throw ParseError("Expected type (int or char)");
+    }
+    
+    // Handle pointer types
+    int pointer_level = 0;
+    while (match(TokenType::MULT)) {
+        var_type += "*";
+        pointer_level++;
+    }
     
     std::string name = currentToken().lexeme;
     expect(TokenType::IDENT, "Expected constant name");
@@ -152,7 +204,7 @@ std::unique_ptr<VarDecl> Parser::parseConstDecl() {
     
     expect(TokenType::SEMICOLON, "Expected ';'");
     
-    return std::make_unique<VarDecl>(name, true, false, 0, std::move(init_value));
+    return std::make_unique<VarDecl>(name, var_type, true, false, 0, pointer_level, std::move(init_value));
 }
 
 std::unique_ptr<Block> Parser::parseBlock() {
@@ -171,7 +223,7 @@ std::unique_ptr<Block> Parser::parseBlock() {
 }
 
 std::unique_ptr<Statement> Parser::parseStatement() {
-    if (currentToken().type == TokenType::INT) {
+    if (currentToken().type == TokenType::INT || currentToken().type == TokenType::CHAR) {
         return parseVarDecl();
     } else if (currentToken().type == TokenType::CONST) {
         return parseConstDecl();
@@ -356,6 +408,15 @@ std::unique_ptr<Expression> Parser::parseUnary() {
         return std::make_unique<UnaryExpr>("-", parseUnary());
     } else if (match(TokenType::NOT)) {
         return std::make_unique<UnaryExpr>("!", parseUnary());
+    } else if (match(TokenType::AMPERSAND)) {
+        return std::make_unique<UnaryExpr>("&", parseUnary());
+    } else if (match(TokenType::MULT)) {
+        // Dereference operator
+        return std::make_unique<UnaryExpr>("*", parseUnary());
+    } else if (match(TokenType::INCREMENT)) {
+        return std::make_unique<UnaryExpr>("++", parseUnary());
+    } else if (match(TokenType::DECREMENT)) {
+        return std::make_unique<UnaryExpr>("--", parseUnary());
     }
     
     return parsePrimary();
@@ -367,6 +428,20 @@ std::unique_ptr<Expression> Parser::parsePrimary() {
         int value = currentToken().value;
         advance();
         return std::make_unique<IntLiteralExpr>(value);
+    }
+    
+    // Character literal
+    if (currentToken().type == TokenType::CHAR_LITERAL) {
+        int value = currentToken().value;
+        advance();
+        return std::make_unique<CharLiteralExpr>(value);
+    }
+    
+    // String literal
+    if (currentToken().type == TokenType::STRING_LITERAL) {
+        std::string value = currentToken().string_value;
+        advance();
+        return std::make_unique<StringLiteralExpr>(value);
     }
     
     // Identifier (variable or function call)

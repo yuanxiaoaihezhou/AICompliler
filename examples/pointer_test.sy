@@ -1,0 +1,12 @@
+// Test pointer features
+int test_ptr(int* p) {
+    return *p;
+}
+
+int main() {
+    int x;
+    int* ptr;
+    x = 42;
+    ptr = &x;
+    return test_ptr(ptr);
+}

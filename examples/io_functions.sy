@@ -1,0 +1,19 @@
+// Built-in I/O functions for self-hosting
+// These would be linked externally in a real implementation
+
+// Character I/O stubs
+int getchar() {
+    return 65;  // Return 'A' for testing
+}
+
+int putchar(int c) {
+    return c;  // In real impl, would output character
+}
+
+// Test the functions
+int main() {
+    int c;
+    c = getchar();
+    putchar(c);
+    return c;
+}

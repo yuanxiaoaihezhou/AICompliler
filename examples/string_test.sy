@@ -1,0 +1,7 @@
+// Test string features
+int main() {
+    char* msg;
+    char c;
+    c = 'H';
+    return 0;
+}
