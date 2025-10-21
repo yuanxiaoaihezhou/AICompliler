@@ -34,6 +34,8 @@ public:
     void visit(CallExpr* node) override;
     void visit(IdentExpr* node) override;
     void visit(IntLiteralExpr* node) override;
+    void visit(CharLiteralExpr* node) override;
+    void visit(StringLiteralExpr* node) override;
     void visit(ArrayAccess* node) override;
 };
 

@@ -25,6 +25,8 @@ enum class ASTNodeType {
     CALL_EXPR,
     IDENT_EXPR,
     INT_LITERAL_EXPR,
+    CHAR_LITERAL_EXPR,
+    STRING_LITERAL_EXPR,
     ARRAY_ACCESS
 };
 
@@ -44,6 +46,20 @@ class IntLiteralExpr : public Expression {
 public:
     int value;
     IntLiteralExpr(int value);
+    void accept(ASTVisitor* visitor) override;
+};
+
+class CharLiteralExpr : public Expression {
+public:
+    int value;
+    CharLiteralExpr(int value);
+    void accept(ASTVisitor* visitor) override;
+};
+
+class StringLiteralExpr : public Expression {
+public:
+    std::string value;
+    StringLiteralExpr(const std::string& value);
     void accept(ASTVisitor* visitor) override;
 };
 
@@ -140,12 +156,15 @@ public:
 class VarDecl : public Statement {
 public:
     std::string name;
+    std::string var_type;  // "int", "char", "void", or "int*", "char*", etc.
     bool is_const;
     bool is_array;
     int array_size;
+    int pointer_level;  // 0 for non-pointer, 1 for *, 2 for **, etc.
     std::unique_ptr<Expression> init_value;
-    VarDecl(const std::string& name, bool is_const, bool is_array = false, 
-            int array_size = 0, std::unique_ptr<Expression> init_value = nullptr);
+    VarDecl(const std::string& name, const std::string& var_type = "int", bool is_const = false, 
+            bool is_array = false, int array_size = 0, int pointer_level = 0,
+            std::unique_ptr<Expression> init_value = nullptr);
     void accept(ASTVisitor* visitor) override;
 };
 
@@ -186,6 +205,8 @@ public:
     virtual void visit(CallExpr* node) = 0;
     virtual void visit(IdentExpr* node) = 0;
     virtual void visit(IntLiteralExpr* node) = 0;
+    virtual void visit(CharLiteralExpr* node) = 0;
+    virtual void visit(StringLiteralExpr* node) = 0;
     virtual void visit(ArrayAccess* node) = 0;
 };
 

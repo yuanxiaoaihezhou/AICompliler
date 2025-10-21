@@ -10,6 +10,8 @@ Lexer::Lexer(const std::string& source)
     keywords["const"] = TokenType::CONST;
     keywords["int"] = TokenType::INT;
     keywords["void"] = TokenType::VOID;
+    keywords["char"] = TokenType::CHAR;
+    keywords["typedef"] = TokenType::TYPEDEF;
     keywords["if"] = TokenType::IF;
     keywords["else"] = TokenType::ELSE;
     keywords["while"] = TokenType::WHILE;
@@ -101,6 +103,86 @@ Token Lexer::identifier() {
     return Token(TokenType::IDENT, id_str, start_line, start_column);
 }
 
+Token Lexer::charLiteral() {
+    int start_line = line;
+    int start_column = column;
+    advance(); // skip opening '
+    
+    if (current_char == '\0') {
+        throw std::runtime_error("Unterminated character literal");
+    }
+    
+    int value = 0;
+    std::string lexeme = "'";
+    
+    if (current_char == '\\') {
+        advance();
+        lexeme += '\\';
+        // Handle escape sequences
+        switch (current_char) {
+            case 'n': value = '\n'; lexeme += 'n'; break;
+            case 't': value = '\t'; lexeme += 't'; break;
+            case 'r': value = '\r'; lexeme += 'r'; break;
+            case '0': value = '\0'; lexeme += '0'; break;
+            case '\\': value = '\\'; lexeme += '\\'; break;
+            case '\'': value = '\''; lexeme += '\''; break;
+            default: value = current_char; lexeme += current_char; break;
+        }
+        advance();
+    } else {
+        value = current_char;
+        lexeme += current_char;
+        advance();
+    }
+    
+    if (current_char != '\'') {
+        throw std::runtime_error("Expected closing ' in character literal");
+    }
+    lexeme += '\'';
+    advance(); // skip closing '
+    
+    return Token(TokenType::CHAR_LITERAL, lexeme, start_line, start_column, value);
+}
+
+Token Lexer::stringLiteral() {
+    int start_line = line;
+    int start_column = column;
+    advance(); // skip opening "
+    
+    std::string value;
+    std::string lexeme = "\"";
+    
+    while (current_char != '\0' && current_char != '"') {
+        if (current_char == '\\') {
+            advance();
+            lexeme += '\\';
+            // Handle escape sequences
+            switch (current_char) {
+                case 'n': value += '\n'; lexeme += 'n'; break;
+                case 't': value += '\t'; lexeme += 't'; break;
+                case 'r': value += '\r'; lexeme += 'r'; break;
+                case '0': value += '\0'; lexeme += '0'; break;
+                case '\\': value += '\\'; lexeme += '\\'; break;
+                case '"': value += '"'; lexeme += '"'; break;
+                default: value += current_char; lexeme += current_char; break;
+            }
+            advance();
+        } else {
+            value += current_char;
+            lexeme += current_char;
+            advance();
+        }
+    }
+    
+    if (current_char != '"') {
+        throw std::runtime_error("Unterminated string literal");
+    }
+    lexeme += '"';
+    advance(); // skip closing "
+    
+    return Token(TokenType::STRING_LITERAL, lexeme, start_line, start_column, value);
+}
+
 Token Lexer::getNextToken() {
     while (current_char != '\0') {
         if (std::isspace(current_char)) {
@@ -124,13 +206,36 @@ Token Lexer::getNextToken() {
             return identifier();
         }
         
+        // Character literals
+        if (current_char == '\'') {
+            return charLiteral();
+        }
+        
+        // String literals
+        if (current_char == '"') {
+            return stringLiteral();
+        }
+        
         // Single character tokens
         char ch = current_char;
         advance();
         
         switch (ch) {
-            case '+': return Token(TokenType::PLUS, "+", start_line, start_column);
-            case '-': return Token(TokenType::MINUS, "-", start_line, start_column);
+            case '+':
+                if (current_char == '+') {
+                    advance();
+                    return Token(TokenType::INCREMENT, "++", start_line, start_column);
+                }
+                return Token(TokenType::PLUS, "+", start_line, start_column);
+            case '-':
+                if (current_char == '-') {
+                    advance();
+                    return Token(TokenType::DECREMENT, "--", start_line, start_column);
+                } else if (current_char == '>') {
+                    advance();
+                    return Token(TokenType::ARROW, "->", start_line, start_column);
+                }
+                return Token(TokenType::MINUS, "-", start_line, start_column);
             case '*': return Token(TokenType::MULT, "*", start_line, start_column);
             case '/': return Token(TokenType::DIV, "/", start_line, start_column);
             case '%': return Token(TokenType::MOD, "%", start_line, start_column);
@@ -142,6 +247,7 @@ Token Lexer::getNextToken() {
             case ']': return Token(TokenType::RBRACKET, "]", start_line, start_column);
             case ';': return Token(TokenType::SEMICOLON, ";", start_line, start_column);
             case ',': return Token(TokenType::COMMA, ",", start_line, start_column);
+            case '.': return Token(TokenType::DOT, ".", start_line, start_column);
             case '!':
                 if (current_char == '=') {
                     advance();
@@ -171,7 +277,7 @@ Token Lexer::getNextToken() {
                     advance();
                     return Token(TokenType::AND, "&&", start_line, start_column);
                 }
-                break;
+                return Token(TokenType::AMPERSAND, "&", start_line, start_column);
             case '|':
                 if (current_char == '|') {
                     advance();

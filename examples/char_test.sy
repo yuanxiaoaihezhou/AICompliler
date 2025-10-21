@@ -1,0 +1,6 @@
+// Test character literals
+int main() {
+    int a;
+    a = 'A';
+    return a;
+}
