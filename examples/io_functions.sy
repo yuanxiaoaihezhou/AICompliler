@@ -1,0 +1,14 @@
+// Built-in I/O functions (would be externally linked)
+// These are basic functions needed for compiler I/O
+
+// Character I/O
+int getchar();
+int putchar(int c);
+
+// Test the functions
+int main() {
+    int c;
+    c = 'A';
+    putchar(c);
+    return 0;
+}
