@@ -6,7 +6,7 @@
 enum class TokenType {
     // Keywords
     CONST, INT, VOID, IF, ELSE, WHILE, BREAK, CONTINUE, RETURN,
-    CHAR, TYPEDEF,
+    CHAR, TYPEDEF, STRUCT,
     
     // Identifiers and literals
     IDENT, INT_LITERAL, CHAR_LITERAL, STRING_LITERAL,

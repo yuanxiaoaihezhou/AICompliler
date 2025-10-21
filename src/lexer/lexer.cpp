@@ -12,6 +12,7 @@ Lexer::Lexer(const std::string& source)
     keywords["void"] = TokenType::VOID;
     keywords["char"] = TokenType::CHAR;
     keywords["typedef"] = TokenType::TYPEDEF;
+    keywords["struct"] = TokenType::STRUCT;
     keywords["if"] = TokenType::IF;
     keywords["else"] = TokenType::ELSE;
     keywords["while"] = TokenType::WHILE;

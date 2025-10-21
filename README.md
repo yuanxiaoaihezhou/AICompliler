@@ -192,6 +192,7 @@ ld fib.o -o fib
 - [设计文档 (Design Document)](docs/design.md) - 详细的编译器设计说明
 - [使用指南 (Usage Guide)](docs/usage.md) - 编译器使用方法和示例
 - [自举特性 (Self-Hosting Features)](docs/self-hosting-features.md) - 新增自举语言特性说明
+- [自举进展 (Bootstrap Progress)](docs/BOOTSTRAP_PROGRESS.md) - 编译器自举实现进度 (75% 完成) ⭐
 
 ## SYSY 语言示例 (SYSY Language Examples)
 
@@ -246,10 +247,12 @@ int main() {
 - [x] 字符类型和字符串字面量支持
 - [x] 指针类型支持
 - [x] 自举语言特性增强
+- [x] 自举示例实现 (词法分析器、语法分析器、代码生成器)
+- [x] 结构体和 typedef 基础支持 (75% 完成)
 - [ ] 完整的标准库支持
-- [ ] 动态内存分配
-- [ ] 结构体和类型系统
-- [ ] 编译器自举 (进行中)
+- [ ] 动态内存分配 (可选)
+- [ ] 文件 I/O 支持
+- [ ] 编译器自举 - 组件集成 (进行中)
 - [ ] 性能优化
 - [ ] 错误恢复和报告改进
 

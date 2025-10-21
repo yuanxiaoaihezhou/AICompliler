@@ -22,6 +22,8 @@ public:
     void visit(Program* node) override;
     void visit(FunctionDef* node) override;
     void visit(VarDecl* node) override;
+    void visit(StructDecl* node) override;
+    void visit(TypedefDecl* node) override;
     void visit(Block* node) override;
     void visit(IfStmt* node) override;
     void visit(WhileStmt* node) override;
@@ -37,6 +39,7 @@ public:
     void visit(CharLiteralExpr* node) override;
     void visit(StringLiteralExpr* node) override;
     void visit(ArrayAccess* node) override;
+    void visit(MemberAccess* node) override;
 };
 
 #endif // IR_GENERATOR_H

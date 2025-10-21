@@ -1,0 +1,33 @@
+// Test struct declarations for self-hosting
+// Demonstrates how to simulate structs using parallel arrays
+// (Full struct support is in progress)
+
+// Simulating: struct Token { int type; int value; int line; }
+// Using parallel arrays instead:
+int token_types[10];
+int token_values[10];
+int token_lines[10];
+
+// Simulating: struct ASTNode { int node_type; int value; }
+// Using parallel arrays instead:
+int ast_node_types[10];
+int ast_node_values[10];
+
+// Function to create a token
+int create_token(int type, int value) {
+    return type + value;
+}
+
+// Main function
+int main() {
+    int token_type;
+    int token_value;
+    
+    token_type = 1;  // TOKEN_INT
+    token_value = 42;
+    
+    int result;
+    result = create_token(token_type, token_value);
+    
+    return result;
+}

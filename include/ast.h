@@ -13,6 +13,8 @@ enum class ASTNodeType {
     FUNCTION_DEF,
     VAR_DECL,
     CONST_DECL,
+    STRUCT_DECL,
+    TYPEDEF_DECL,
     BLOCK,
     IF_STMT,
     WHILE_STMT,
@@ -27,7 +29,8 @@ enum class ASTNodeType {
     INT_LITERAL_EXPR,
     CHAR_LITERAL_EXPR,
     STRING_LITERAL_EXPR,
-    ARRAY_ACCESS
+    ARRAY_ACCESS,
+    MEMBER_ACCESS
 };
 
 class ASTNode {
@@ -168,6 +171,34 @@ public:
     void accept(ASTVisitor* visitor) override;
 };
 
+// Struct declaration
+class StructDecl : public ASTNode {
+public:
+    std::string name;
+    std::vector<std::unique_ptr<VarDecl>> members;
+    StructDecl(const std::string& name);
+    void accept(ASTVisitor* visitor) override;
+};
+
+// Typedef declaration
+class TypedefDecl : public ASTNode {
+public:
+    std::string original_type;
+    std::string new_name;
+    TypedefDecl(const std::string& original_type, const std::string& new_name);
+    void accept(ASTVisitor* visitor) override;
+};
+
+// Member access expression (struct.field or ptr->field)
+class MemberAccess : public Expression {
+public:
+    std::unique_ptr<Expression> object;
+    std::string member_name;
+    bool is_arrow;  // true for ->, false for .
+    MemberAccess(std::unique_ptr<Expression> object, const std::string& member_name, bool is_arrow);
+    void accept(ASTVisitor* visitor) override;
+};
+
 // Function definition
 class FunctionDef : public ASTNode {
 public:
@@ -193,6 +224,8 @@ public:
     virtual void visit(Program* node) = 0;
     virtual void visit(FunctionDef* node) = 0;
     virtual void visit(VarDecl* node) = 0;
+    virtual void visit(StructDecl* node) = 0;
+    virtual void visit(TypedefDecl* node) = 0;
     virtual void visit(Block* node) = 0;
     virtual void visit(IfStmt* node) = 0;
     virtual void visit(WhileStmt* node) = 0;
@@ -208,6 +241,7 @@ public:
     virtual void visit(CharLiteralExpr* node) = 0;
     virtual void visit(StringLiteralExpr* node) = 0;
     virtual void visit(ArrayAccess* node) = 0;
+    virtual void visit(MemberAccess* node) = 0;
 };
 
 #endif // AST_H

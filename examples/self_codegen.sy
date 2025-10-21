@@ -1,0 +1,226 @@
+// Simplified code generator for self-hosting compiler
+// Demonstrates x86_64 assembly generation with current features
+
+// Assembly instruction opcodes
+const int ASM_MOV = 1;
+const int ASM_ADD = 2;
+const int ASM_SUB = 3;
+const int ASM_MUL = 4;
+const int ASM_PUSH = 5;
+const int ASM_POP = 6;
+const int ASM_CALL = 7;
+const int ASM_RET = 8;
+const int ASM_JMP = 9;
+const int ASM_JE = 10;
+
+// Register constants
+const int REG_RAX = 0;
+const int REG_RBX = 1;
+const int REG_RCX = 2;
+const int REG_RDX = 3;
+const int REG_RSI = 4;
+const int REG_RDI = 5;
+const int REG_RSP = 6;
+const int REG_RBP = 7;
+
+// Simple code buffer (using arrays)
+int code_buffer[1000];
+int code_size;
+
+// Label counter
+int label_counter;
+
+// Initialize code generator
+void init_codegen() {
+    code_size = 0;
+    label_counter = 0;
+}
+
+// Generate new label
+int new_label() {
+    int label;
+    label = label_counter;
+    ++label_counter;
+    return label;
+}
+
+// Emit instruction to code buffer
+void emit_instruction(int opcode, int operand1, int operand2) {
+    int idx;
+    idx = code_size;
+    
+    if (idx < 1000) {
+        code_buffer[idx] = opcode;
+        ++code_size;
+        
+        // In real implementation, would encode operands
+        if (operand1 != -1) {
+            code_buffer[code_size] = operand1;
+            ++code_size;
+        }
+        if (operand2 != -1) {
+            code_buffer[code_size] = operand2;
+            ++code_size;
+        }
+    }
+}
+
+// Generate mov instruction
+void gen_mov(int dest_reg, int value) {
+    emit_instruction(ASM_MOV, dest_reg, value);
+}
+
+// Generate add instruction
+void gen_add(int dest_reg, int src_reg) {
+    emit_instruction(ASM_ADD, dest_reg, src_reg);
+}
+
+// Generate sub instruction
+void gen_sub(int dest_reg, int src_reg) {
+    emit_instruction(ASM_SUB, dest_reg, src_reg);
+}
+
+// Generate mul instruction
+void gen_mul(int reg) {
+    emit_instruction(ASM_MUL, reg, -1);
+}
+
+// Generate push instruction
+void gen_push(int reg) {
+    emit_instruction(ASM_PUSH, reg, -1);
+}
+
+// Generate pop instruction
+void gen_pop(int reg) {
+    emit_instruction(ASM_POP, reg, -1);
+}
+
+// Generate function prologue
+void gen_prologue() {
+    gen_push(REG_RBP);           // push rbp
+    gen_mov(REG_RBP, REG_RSP);   // mov rbp, rsp
+}
+
+// Generate function epilogue
+void gen_epilogue() {
+    gen_mov(REG_RSP, REG_RBP);   // mov rsp, rbp
+    gen_pop(REG_RBP);            // pop rbp
+    emit_instruction(ASM_RET, -1, -1);  // ret
+}
+
+// Generate code for binary expression
+void gen_binary_expr(int op, int left_val, int right_val) {
+    // Load left operand into RAX
+    gen_mov(REG_RAX, left_val);
+    
+    // Load right operand into RBX
+    gen_mov(REG_RBX, right_val);
+    
+    // Perform operation
+    if (op == 1) {  // ADD
+        gen_add(REG_RAX, REG_RBX);
+    }
+    if (op == 2) {  // SUB
+        gen_sub(REG_RAX, REG_RBX);
+    }
+    if (op == 3) {  // MUL
+        gen_mul(REG_RBX);
+    }
+}
+
+// Generate code for function call
+void gen_call(int num_args) {
+    int i;
+    
+    // Push arguments (simplified)
+    i = 0;
+    while (i < num_args) {
+        gen_push(REG_RAX);
+        ++i;
+    }
+    
+    // Call instruction
+    emit_instruction(ASM_CALL, 0, -1);
+    
+    // Clean up stack
+    i = 0;
+    while (i < num_args) {
+        gen_pop(REG_RBX);
+        ++i;
+    }
+}
+
+// Generate code for if statement
+void gen_if_stmt(int condition_reg) {
+    int else_label;
+    int end_label;
+    
+    else_label = new_label();
+    end_label = new_label();
+    
+    // Compare and jump
+    gen_mov(REG_RAX, condition_reg);
+    emit_instruction(ASM_JE, else_label, -1);
+    
+    // Then block code would go here
+    
+    // Jump to end
+    emit_instruction(ASM_JMP, end_label, -1);
+    
+    // Else label
+    // emit_label(else_label);
+    
+    // Else block code would go here
+    
+    // End label
+    // emit_label(end_label);
+}
+
+// Generate code for return statement
+void gen_return(int value) {
+    gen_mov(REG_RAX, value);
+    gen_epilogue();
+}
+
+// Get instruction at index
+int get_instruction(int idx) {
+    if (idx >= 0) {
+        if (idx < code_size) {
+            return code_buffer[idx];
+        }
+    }
+    return -1;
+}
+
+// Get code size
+int get_code_size() {
+    return code_size;
+}
+
+// Demo: Generate code for simple function
+int codegen_demo() {
+    int result;
+    
+    init_codegen();
+    
+    // Generate: int add(int a, int b) { return a + b; }
+    gen_prologue();
+    
+    // a + b
+    gen_binary_expr(1, 5, 3);  // ADD 5 + 3
+    
+    // return result
+    gen_return(REG_RAX);
+    
+    result = get_code_size();
+    return result;
+}
+
+// Main function
+int main() {
+    int result;
+    
+    result = codegen_demo();
+    
+    return result;
+}
