@@ -17,10 +17,11 @@ EXAMPLES_DIR = examples
 LEXER_SRCS = $(SRC_DIR)/lexer/token.cpp $(SRC_DIR)/lexer/lexer.cpp
 PARSER_SRCS = $(SRC_DIR)/parser/ast.cpp $(SRC_DIR)/parser/parser.cpp
 IR_SRCS = $(SRC_DIR)/ir/ir.cpp $(SRC_DIR)/ir/ir_generator.cpp
+OPTIMIZER_SRCS = $(SRC_DIR)/optimizer/optimizer.cpp
 CODEGEN_SRCS = $(SRC_DIR)/codegen/codegen.cpp
 MAIN_SRC = $(SRC_DIR)/main.cpp
 
-ALL_SRCS = $(LEXER_SRCS) $(PARSER_SRCS) $(IR_SRCS) $(CODEGEN_SRCS) $(MAIN_SRC)
+ALL_SRCS = $(LEXER_SRCS) $(PARSER_SRCS) $(IR_SRCS) $(OPTIMIZER_SRCS) $(CODEGEN_SRCS) $(MAIN_SRC)
 
 # Object files
 OBJS = $(ALL_SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
@@ -38,7 +39,7 @@ all: $(TARGET)
 
 # Create necessary directories
 $(BUILD_DIR) $(BIN_DIR):
-	mkdir -p $(BUILD_DIR)/lexer $(BUILD_DIR)/parser $(BUILD_DIR)/ir $(BUILD_DIR)/codegen
+	mkdir -p $(BUILD_DIR)/lexer $(BUILD_DIR)/parser $(BUILD_DIR)/ir $(BUILD_DIR)/optimizer $(BUILD_DIR)/codegen
 	mkdir -p $(BIN_DIR)
 
 # Link executable

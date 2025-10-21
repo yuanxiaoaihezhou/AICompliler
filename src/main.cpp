@@ -5,6 +5,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "ir_generator.h"
+#include "optimizer.h"
 #include "codegen.h"
 
 std::string readFile(const std::string& filename) {
@@ -33,6 +34,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "  -o <file>   Specify output assembly file (default: a.s)\n";
         std::cerr << "  -ir         Output intermediate representation\n";
         std::cerr << "  -tokens     Output tokens from lexical analysis\n";
+        std::cerr << "  -O0         Disable optimizations\n";
         return 1;
     }
     
@@ -40,6 +42,7 @@ int main(int argc, char* argv[]) {
     std::string output_file = "a.s";
     bool show_ir = false;
     bool show_tokens = false;
+    bool optimize = true;
     
     // Parse command line arguments
     for (int i = 2; i < argc; i++) {
@@ -50,6 +53,8 @@ int main(int argc, char* argv[]) {
             show_ir = true;
         } else if (arg == "-tokens") {
             show_tokens = true;
+        } else if (arg == "-O0") {
+            optimize = false;
         }
     }
     
@@ -81,9 +86,22 @@ int main(int argc, char* argv[]) {
         IRModule ir_module = ir_gen.generate(ast.get());
         
         if (show_ir) {
+            std::cout << "Before optimization:\n";
             std::cout << ir_module.toString();
         }
         std::cout << "IR generation completed\n\n";
+        
+        // Optimization
+        if (optimize) {
+            std::cout << "=== Optimization ===\n";
+            Optimizer optimizer;
+            ir_module = optimizer.optimize(ir_module);
+            if (show_ir) {
+                std::cout << "After optimization:\n";
+                std::cout << ir_module.toString();
+            }
+            std::cout << "Optimization completed\n\n";
+        }
         
         // Code generation
         std::cout << "=== Code Generation ===\n";
