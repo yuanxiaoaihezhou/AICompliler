@@ -1,14 +1,19 @@
-// Built-in I/O functions (would be externally linked)
-// These are basic functions needed for compiler I/O
+// Built-in I/O functions for self-hosting
+// These would be linked externally in a real implementation
 
-// Character I/O
-int getchar();
-int putchar(int c);
+// Character I/O stubs
+int getchar() {
+    return 65;  // Return 'A' for testing
+}
+
+int putchar(int c) {
+    return c;  // In real impl, would output character
+}
 
 // Test the functions
 int main() {
     int c;
-    c = 'A';
+    c = getchar();
     putchar(c);
-    return 0;
+    return c;
 }

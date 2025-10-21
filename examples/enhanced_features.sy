@@ -1,0 +1,58 @@
+// Comprehensive test of enhanced features for self-hosting
+
+// Global variables
+int global_count;
+char* global_message;
+
+// Function with char return type
+char get_first_char(char* str) {
+    return *str;
+}
+
+// Function with pointer parameters
+int add_indirect(int* a, int* b) {
+    return *a + *b;
+}
+
+// Function demonstrating increment/decrement
+int increment_value(int* ptr) {
+    ++(*ptr);
+    return *ptr;
+}
+
+// Main function testing all features
+int main() {
+    // Character variables and literals
+    char c1;
+    char c2;
+    c1 = 'A';
+    c2 = 'Z';
+    
+    // Integer and pointer variables
+    int x;
+    int y;
+    int* px;
+    int* py;
+    
+    x = 10;
+    y = 20;
+    px = &x;
+    py = &y;
+    
+    // Pointer operations
+    int result;
+    result = add_indirect(px, py);  // result = 30
+    
+    // Increment through pointer
+    increment_value(px);  // x becomes 11
+    
+    // Character pointer
+    char* msg;
+    char first;
+    
+    // Global variable access
+    global_count = 42;
+    
+    // Return value
+    return result;
+}
