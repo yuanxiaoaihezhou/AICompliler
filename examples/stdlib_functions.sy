@@ -1,0 +1,80 @@
+// Standard library function declarations for self-hosting
+// These are external functions that the self-hosted compiler will use
+
+// File I/O system calls (will be linked with system libraries)
+// int open(char* path, int flags);
+// int read(int fd, char* buf, int count);
+// int write(int fd, char* buf, int count);
+// int close(int fd);
+
+// Memory allocation (will be linked with system libraries)
+// void* malloc(int size);
+// void free(void* ptr);
+
+// String functions (will be linked with system libraries)
+// int strlen(char* str);
+// int strcmp(char* s1, char* s2);
+// char* strcpy(char* dest, char* src);
+// char* strcat(char* dest, char* src);
+
+// Simple I/O functions
+// int putchar(int c);
+// int getchar();
+
+// Example: Simple character output using putchar
+int print_hello() {
+    // These will be external function calls when linked
+    // For now, we return a value to demonstrate the structure
+    return 0;
+}
+
+// String length implementation (example for self-hosting)
+int my_strlen(char* str) {
+    int len;
+    len = 0;
+    
+    while (*str != '\0') {
+        ++len;
+        ++str;
+    }
+    
+    return len;
+}
+
+// String compare implementation
+int my_strcmp(char* s1, char* s2) {
+    while (*s1 != '\0') {
+        if (*s1 != *s2) {
+            return *s1 - *s2;
+        }
+        ++s1;
+        ++s2;
+    }
+    
+    if (*s2 != '\0') {
+        return 0 - *s2;
+    }
+    
+    return 0;
+}
+
+// String copy implementation
+void my_strcpy(char* dest, char* src) {
+    while (*src != '\0') {
+        *dest = *src;
+        ++dest;
+        ++src;
+    }
+    *dest = '\0';
+}
+
+// Main function demonstrating usage
+int main() {
+    char* str;
+    int len;
+    
+    // In a real implementation with proper string support,
+    // we would test these functions properly
+    
+    return 0;
+}

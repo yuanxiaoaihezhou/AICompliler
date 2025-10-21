@@ -147,6 +147,35 @@ void VarDecl::accept(ASTVisitor* visitor) {
     visitor->visit(this);
 }
 
+// StructDecl
+StructDecl::StructDecl(const std::string& name) : name(name) {
+    type = ASTNodeType::STRUCT_DECL;
+}
+
+void StructDecl::accept(ASTVisitor* visitor) {
+    visitor->visit(this);
+}
+
+// TypedefDecl
+TypedefDecl::TypedefDecl(const std::string& original_type, const std::string& new_name)
+    : original_type(original_type), new_name(new_name) {
+    type = ASTNodeType::TYPEDEF_DECL;
+}
+
+void TypedefDecl::accept(ASTVisitor* visitor) {
+    visitor->visit(this);
+}
+
+// MemberAccess
+MemberAccess::MemberAccess(std::unique_ptr<Expression> object, const std::string& member_name, bool is_arrow)
+    : object(std::move(object)), member_name(member_name), is_arrow(is_arrow) {
+    type = ASTNodeType::MEMBER_ACCESS;
+}
+
+void MemberAccess::accept(ASTVisitor* visitor) {
+    visitor->visit(this);
+}
+
 // FunctionDef
 FunctionDef::FunctionDef(const std::string& name, const std::string& return_type)
     : name(name), return_type(return_type) {

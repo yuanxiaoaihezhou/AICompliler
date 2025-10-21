@@ -1,0 +1,263 @@
+// Simplified parser implementation for self-hosting compiler
+// Demonstrates recursive descent parsing with current language features
+
+// AST Node type constants
+const int NODE_PROGRAM = 0;
+const int NODE_FUNCTION = 1;
+const int NODE_VAR_DECL = 2;
+const int NODE_BINARY_EXPR = 3;
+const int NODE_NUMBER = 4;
+const int NODE_IDENT = 5;
+const int NODE_CALL = 6;
+const int NODE_IF = 7;
+const int NODE_WHILE = 8;
+const int NODE_RETURN = 9;
+
+// Token type constants (matching lexer)
+const int TOKEN_EOF = 0;
+const int TOKEN_INT = 1;
+const int TOKEN_IF = 4;
+const int TOKEN_WHILE = 6;
+const int TOKEN_RETURN = 7;
+const int TOKEN_IDENT = 10;
+const int TOKEN_NUMBER = 11;
+const int TOKEN_PLUS = 20;
+const int TOKEN_MINUS = 21;
+const int TOKEN_LPAREN = 30;
+const int TOKEN_RPAREN = 31;
+const int TOKEN_LBRACE = 32;
+const int TOKEN_RBRACE = 33;
+const int TOKEN_SEMICOLON = 34;
+
+// Parser state (simulating token stream)
+int current_token_type;
+int current_token_value;
+int token_position;
+
+// Simple AST node storage (using parallel arrays)
+int ast_node_types[100];
+int ast_node_values[100];
+int ast_node_count;
+
+// Initialize parser
+void init_parser() {
+    current_token_type = TOKEN_EOF;
+    current_token_value = 0;
+    token_position = 0;
+    ast_node_count = 0;
+}
+
+// Add node to AST
+int add_ast_node(int node_type, int value) {
+    int idx;
+    idx = ast_node_count;
+    
+    if (idx < 100) {
+        ast_node_types[idx] = node_type;
+        ast_node_values[idx] = value;
+        ++ast_node_count;
+        return idx;
+    }
+    
+    return -1;
+}
+
+// Check if current token matches expected type
+int match_token(int expected_type) {
+    if (current_token_type == expected_type) {
+        return 1;
+    }
+    return 0;
+}
+
+// Advance to next token (simplified - would call lexer)
+void advance_token() {
+    ++token_position;
+    // In real implementation, this would call the lexer
+}
+
+// Parse a primary expression (number or identifier)
+int parse_primary() {
+    int node_idx;
+    
+    if (match_token(TOKEN_NUMBER)) {
+        node_idx = add_ast_node(NODE_NUMBER, current_token_value);
+        advance_token();
+        return node_idx;
+    }
+    
+    if (match_token(TOKEN_IDENT)) {
+        node_idx = add_ast_node(NODE_IDENT, current_token_value);
+        advance_token();
+        return node_idx;
+    }
+    
+    if (match_token(TOKEN_LPAREN)) {
+        advance_token();
+        node_idx = parse_expression();
+        advance_token();  // consume RPAREN
+        return node_idx;
+    }
+    
+    return -1;
+}
+
+// Parse a binary expression
+int parse_expression() {
+    int left;
+    int right;
+    int node_idx;
+    
+    left = parse_primary();
+    
+    if (match_token(TOKEN_PLUS)) {
+        advance_token();
+        right = parse_primary();
+        node_idx = add_ast_node(NODE_BINARY_EXPR, TOKEN_PLUS);
+        return node_idx;
+    }
+    
+    if (match_token(TOKEN_MINUS)) {
+        advance_token();
+        right = parse_primary();
+        node_idx = add_ast_node(NODE_BINARY_EXPR, TOKEN_MINUS);
+        return node_idx;
+    }
+    
+    return left;
+}
+
+// Parse a statement
+int parse_statement() {
+    int node_idx;
+    
+    // Return statement
+    if (match_token(TOKEN_RETURN)) {
+        advance_token();
+        node_idx = parse_expression();
+        advance_token();  // consume SEMICOLON
+        return add_ast_node(NODE_RETURN, node_idx);
+    }
+    
+    // If statement
+    if (match_token(TOKEN_IF)) {
+        advance_token();
+        advance_token();  // consume LPAREN
+        parse_expression();
+        advance_token();  // consume RPAREN
+        advance_token();  // consume LBRACE
+        parse_statement();
+        advance_token();  // consume RBRACE
+        return add_ast_node(NODE_IF, 0);
+    }
+    
+    // While statement
+    if (match_token(TOKEN_WHILE)) {
+        advance_token();
+        advance_token();  // consume LPAREN
+        parse_expression();
+        advance_token();  // consume RPAREN
+        advance_token();  // consume LBRACE
+        parse_statement();
+        advance_token();  // consume RBRACE
+        return add_ast_node(NODE_WHILE, 0);
+    }
+    
+    // Expression statement
+    node_idx = parse_expression();
+    advance_token();  // consume SEMICOLON
+    return node_idx;
+}
+
+// Parse a function definition
+int parse_function() {
+    int func_node;
+    
+    // Consume return type (int/void)
+    advance_token();
+    
+    // Function name
+    if (match_token(TOKEN_IDENT)) {
+        advance_token();
+    }
+    
+    // Parameters
+    advance_token();  // consume LPAREN
+    advance_token();  // consume RPAREN (simplified)
+    
+    // Body
+    advance_token();  // consume LBRACE
+    
+    while (!match_token(TOKEN_RBRACE)) {
+        if (match_token(TOKEN_EOF)) {
+            break;
+        }
+        parse_statement();
+    }
+    
+    advance_token();  // consume RBRACE
+    
+    func_node = add_ast_node(NODE_FUNCTION, 0);
+    return func_node;
+}
+
+// Parse a program (top level)
+int parse_program() {
+    int program_node;
+    
+    init_parser();
+    
+    // Parse all function definitions
+    while (!match_token(TOKEN_EOF)) {
+        parse_function();
+    }
+    
+    program_node = add_ast_node(NODE_PROGRAM, ast_node_count);
+    return program_node;
+}
+
+// Get node type
+int get_node_type(int node_idx) {
+    if (node_idx >= 0) {
+        if (node_idx < ast_node_count) {
+            return ast_node_types[node_idx];
+        }
+    }
+    return -1;
+}
+
+// Get node value
+int get_node_value(int node_idx) {
+    if (node_idx >= 0) {
+        if (node_idx < ast_node_count) {
+            return ast_node_values[node_idx];
+        }
+    }
+    return -1;
+}
+
+// Demo: Parse a simple expression
+int parse_demo() {
+    int node;
+    int node_type;
+    
+    // Simulate token stream: 5 + 3
+    current_token_type = TOKEN_NUMBER;
+    current_token_value = 5;
+    
+    init_parser();
+    
+    node = parse_primary();
+    node_type = get_node_type(node);
+    
+    return node_type;
+}
+
+// Main function
+int main() {
+    int result;
+    
+    result = parse_demo();
+    
+    return result;
+}

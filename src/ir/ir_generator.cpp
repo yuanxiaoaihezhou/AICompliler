@@ -266,3 +266,27 @@ void IRGenerator::visit(ArrayAccess* node) {
     current_function->addInstruction(IRInstruction(IROpcode::LOAD, temp, node->array_name + "[" + index_result + "]"));
     last_result = temp;
 }
+
+void IRGenerator::visit(StructDecl* node) {
+    // Struct declarations are handled at compile time
+    // No IR instructions needed for type definitions
+    (void)node;  // Suppress unused parameter warning
+}
+
+void IRGenerator::visit(TypedefDecl* node) {
+    // Typedef declarations are handled at compile time
+    // No IR instructions needed for type definitions
+    (void)node;  // Suppress unused parameter warning
+}
+
+void IRGenerator::visit(MemberAccess* node) {
+    // Generate code for member access (simplified)
+    node->object->accept(this);
+    std::string object_result = last_result;
+    
+    std::string temp = current_function->newTemp();
+    // This is simplified - real member access needs struct layout calculation
+    std::string access_op = node->is_arrow ? "->" : ".";
+    current_function->addInstruction(IRInstruction(IROpcode::LOAD, temp, object_result + access_op + node->member_name));
+    last_result = temp;
+}
