@@ -1,0 +1,34 @@
+# Build directories
+build/
+bin/
+
+# Object files
+*.o
+*.obj
+
+# Assembly files (generated)
+*.s
+
+# Executables
+*.exe
+*.out
+a.out
+
+# Compiler output
+*.ir
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
